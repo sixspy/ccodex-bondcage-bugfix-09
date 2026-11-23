@@ -1,7 +1,7 @@
 export const releaseViewTemplate = `
 <section class="panel">
   <h2>解笼拨付</h2>
-  <p class="hint">仅核验通过的笼可拨付。默认把可用额全额拨给受益人，也可部分解笼。账户余额与冻结同步扣减。</p>
+  <p class="hint">仅核验通过的笼可拨付。默认把可用额全额拨给受益人，也可部分解笼。账户余额与冻结同步扣减。出金与释锁同一事务边界：释锁偏航则拨付零改、拒绝亮绿。</p>
   <div class="grid-2">
     <div>
       <div class="form-row">
@@ -26,6 +26,9 @@ export const releaseViewTemplate = `
       <div class="actions">
         <button class="ok" @click="doRelease">解笼拨付</button>
       </div>
+      <div class="release-note">
+        收尾口径：拨付提交前必须删除该笼的 cage_locks 占行；删不掉则整笔回滚并记「释锁偏航」，页面不会显示成功。
+      </div>
     </div>
     <div>
       <table>
@@ -40,6 +43,20 @@ export const releaseViewTemplate = `
             <td>{{ r.payee }}</td>
             <td>{{ r.cage_generation }}</td>
             <td>{{ r.created_at }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <h3 style="margin-top:14px">该笼持锁状态</h3>
+      <table>
+        <thead><tr><th>笼键</th><th>持有者</th><th>状态</th></tr></thead>
+        <tbody>
+          <tr v-for="l in cageLocks" :key="l.lock_key">
+            <td>{{ l.lock_key }}</td>
+            <td>{{ l.holder }}</td>
+            <td><span class="badge fail">残留占笼</span></td>
+          </tr>
+          <tr v-if="!cageLocks.length">
+            <td colspan="3" class="hint">无持锁，收尾已闭环</td>
           </tr>
         </tbody>
       </table>

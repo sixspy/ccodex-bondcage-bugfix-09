@@ -136,6 +136,11 @@ createApp({
         (c) => c.status === "核验通过" || c.status === "部分解笼"
       )
     );
+    const cageLocks = computed(() => {
+      const id = releaseForm.value.cage_id;
+      if (!id) return [];
+      return locks.value.filter((l) => l.lock_key === `cage:${id}`);
+    });
     const failCages = computed(() =>
       cages.value.filter(
         (c) => c.status === "核验违约" || c.status === "部分罚没"
@@ -428,6 +433,7 @@ createApp({
       frozenCages,
       passCages,
       failCages,
+      cageLocks,
       login,
       logout,
       refresh,
